@@ -27,3 +27,4 @@ staging/
 outputs/quality/
 outputs/reconcile_raw_vs_portal/raw_snapshots/
 outputs/reconcile_raw_vs_portal/*.pdf
+londrina_dir

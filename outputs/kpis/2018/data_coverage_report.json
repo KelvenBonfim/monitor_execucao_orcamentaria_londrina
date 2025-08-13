@@ -1,0 +1,11 @@
+{
+  "fonte": "db",
+  "ano": 2018,
+  "tem_fato_despesa": true,
+  "tem_fato_receita": true,
+  "has_raw": true,
+  "qc_r1_inequalities_rows": 6,
+  "qc_r6_yoy_anomalias_rows": 0,
+  "reconcile_despesa_diff_abs_sum": 0.0,
+  "reconcile_receita_diff_arrecadacao_sum": 0.0
+}

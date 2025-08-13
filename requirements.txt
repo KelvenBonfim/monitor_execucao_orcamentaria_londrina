@@ -1,0 +1,14 @@
+# Core data pipeline
+pandas
+requests
+beautifulsoup4
+pdfplumber
+
+# Database
+SQLAlchemy
+psycopg2-binary
+numpy
+
+# Dashboard
+streamlit
+plotly

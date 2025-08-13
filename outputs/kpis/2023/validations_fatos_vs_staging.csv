@@ -1,0 +1,2 @@
+ano,fd_empenhado,fd_liquidado,fd_pago,stg_empenhado,stg_liquidado,stg_pago,fd_previsto,fd_arrecadado,stg_previsto,stg_arrecadado,diff_empenhado,diff_liquidado,diff_pago,diff_previsto,diff_arrecadado
+2023,3620876605.31,3462923251.76,3429915902.64,3512366477.26,3462923251.76,3429915902.64,3629134000.0,3833933844.1699996,3629134000.0,3833933844.17,108510128.04999971,0.0,0.0,0.0,-4.76837158203125e-07

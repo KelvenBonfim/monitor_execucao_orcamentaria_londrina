@@ -1,0 +1,29 @@
+# ambientes e caches
+.venv/
+venv/
+.env
+.env.*
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE / SO
+.vscode/
+.idea/
+.DS_Store
+
+# credenciais / segredos comuns
+*.pem
+*.key
+*.crt
+*.pfx
+*.pgpass
+secrets.*
+streamlit/secrets.toml
+
+# dados temporários
+logs/
+staging/
+outputs/quality/
+outputs/reconcile_raw_vs_portal/raw_snapshots/
+outputs/reconcile_raw_vs_portal/*.pdf

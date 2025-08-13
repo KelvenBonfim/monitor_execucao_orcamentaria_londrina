@@ -1,0 +1,7 @@
+{
+  "fonte": "db",
+  "ano": 2021,
+  "tem_fato_despesa": true,
+  "tem_fato_receita": true,
+  "has_raw": false
+}

@@ -7,41 +7,60 @@ It supports **two data modes**: CSV-based (local KPIs) and Database mode (Neon-h
 
 ```
 monitor_execucao_orcamentaria_londrina/
-├── logs/                          # Execution log files
+├── data/                           # Local data storage
+│   └── kpis/                       # Generated KPIs for CSV mode (by year)
+│       ├── 2018/ ... 2025/         # One folder per year, containing:
+│       │   ├── data_coverage_report.json
+│       │   ├── execucao_global_anual.{csv,json}           # Global annual budget execution
+│       │   ├── execucao_por_entidade_anual.{csv,json}     # Execution by entity
+│       │   ├── receita_prevista_arrecadada_anual.{csv,json} # Revenue forecast vs collected
+│       │   ├── superavit_deficit_anual.{csv,json}         # Surplus/deficit summary
+│       │   ├── validations_fatos_vs_staging.{csv,json}   # Fact table vs staging validations
+│       │   └── (other validations if generated)
+├── logs/                           # Execution log files
 │   ├── collect_project_snapshot.log
 │   └── load_*.log
-├── outputs/                       # Processed outputs
-│   ├── kpis/                      # Annual indicators (CSV + JSON)
-│   │   ├── 2018/ ... 2025/         # One folder per year, containing:
-│   │   │   ├── data_coverage_report.json
-│   │   │   ├── execucao_global_anual.{csv,json}
-│   │   │   ├── execucao_por_entidade_anual.{csv,json}
-│   │   │   ├── receita_prevista_arrecadada_anual.{csv,json}
-│   │   │   ├── superavit_deficit_anual.{csv,json}
-│   │   │   ├── validations_fatos_vs_staging.{csv,json}
-│   │   │   └── validations_staging_vs_raw.{csv,json}
-│   ├── quality/                   # Data quality reports
-│   ├── quality_checks/            # Automated checks (CSV)
-│   └── reconcile_raw_vs_portal/   # Data reconciliation with the portal
-│       └── raw_snapshots/         # Raw yearly snapshots (CSV)
-├── raw/                           # Collected raw data
-│   ├── empenhadas/                # Commitment CSVs per year
-│   ├── liquidadas/                # Liquidated expenses per year
-│   ├── pagas/                     # Paid expenses per year
-│   └── receitas/                  # Revenues from Anexo 10 (PDF converted to CSV)
-├── scripts/                       # Automation scripts
-│   ├── 01_fetch_equiplano_ano.py  # Download expense CSVs (Equiplano)
-│   ├── 02_fetch_receita_prev_arrec.py  # Download forecast & collected revenue (Anexo 10)
-│   ├── 03_anexo10_pdf_to_csv.py   # Convert Anexo 10 PDF to CSV
-│   ├── 04_quality_checks.py       # Data quality checks
-│   ├── 05_build_models.py         # Builds staging & facts tables in PostgreSQL
-│   ├── 06_kpi_generator.py        # Generates KPIs
-│   └── 08_reconcile_raw_vs_portal.py  # Strict reconciliation
-├── app.py
-├── LICENCE
-├── README.md
-├── README.pt-br.md
-└── requirements.txt
+├── londrina_dir/                   # PostgreSQL directory-format dump (pg_dump -F d)
+│   ├── *.dat.gz
+│   └── toc.dat
+├── outputs/                        # Processed outputs
+│   ├── quality/                    # Data quality analysis results
+│   │   ├── R1_inequalities.csv
+│   │   ├── R4_reconcile_fatos_vs_staging.csv
+│   │   ├── R6_yoy_anomalias.csv
+│   │   └── SUMMARY.csv
+│   ├── quality_checks/             # Automated quality check outputs
+│   │   ├── R1_inequalities.csv
+│   │   ├── R4_reconcile_fatos_vs_staging.csv
+│   │   └── R6_yoy_anomalias.csv
+│   └── reconcile_raw_vs_portal/    # Reconciliation between raw and portal data
+│       └── raw_snapshots/          # Raw yearly snapshots for reconciliation
+│           ├── 2018/ ... 2025/     # One folder per year, containing:
+│           │   ├── equiplano_empenhadas_anoYYYY.csv
+│           │   ├── equiplano_liquidadas_anoYYYY.csv
+│           │   └── equiplano_pagas_anoYYYY.csv
+├── raw/                            # Collected raw datasets
+│   ├── empenhadas/                 # Commitments per year (Equiplano)
+│   ├── liquidadas/                 # Liquidations per year (Equiplano)
+│   ├── pagas/                      # Payments per year (Equiplano)
+│   └── receitas_raw/               # Raw revenue data from Anexo 10
+│       ├── _html_debug/            # Optional debug files
+│       └── *.pdf                   # Original Anexo 10 PDFs
+├── scripts/                        # Automation and ETL scripts
+│   ├── 01_fetch_equiplano_ano.py       # Downloads annual expense CSVs from Equiplano
+│   ├── 02_fetch_receita_prev_arrec.py  # Downloads forecast & collected revenue data
+│   ├── 03_anexo10_pdf_to_csv.py        # Converts Anexo 10 PDF to CSV
+│   ├── 04_load_csv_to_postgres.py      # Loads CSV files into PostgreSQL
+│   ├── 05_build_models.py              # Builds staging and fact tables in PostgreSQL
+│   ├── 06_quality_checks.py            # Runs data quality checks and exports reports
+│   ├── 07_backfill_historico.py        # Backfills historical data into the database
+│   ├── 08_reconcile_raw_vs_portal.py   # Performs strict reconciliation with the portal
+│   └── 09_export_kpis.py               # Generates KPI files for CSV mode
+├── app.py                          # Streamlit application for dashboard visualization
+├── LICENCE                         # License file (MIT)
+├── README.md                       # Main documentation (English)
+├── README.pt-br.md                 # Documentation in Portuguese
+└── requirements.txt                # Python dependencies
 ```
 
 ## ⚙️ Installation

@@ -10,6 +10,24 @@ st.set_page_config(
     layout="wide"
 )
 
+# =============== CSS responsivo (auto no mobile) ===============
+st.markdown(
+    """
+    <style>
+    @media (max-width: 768px) {
+      .block-container { padding-left: 0.6rem; padding-right: 0.6rem; }
+      h1, h2, h3 { font-size: 1.1rem; line-height: 1.2; }
+      /* Métricas mais compactas */
+      [data-testid="stMetricLabel"] { font-size: 0.8rem; }
+      [data-testid="stMetricValue"] { font-size: 1.1rem; }
+      /* Reduz expander padding */
+      .streamlit-expanderHeader { font-size: 0.95rem; }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # =========================================
 # Fonte de dados (DB Neon OU CSVs fallback)
 # =========================================
@@ -40,16 +58,23 @@ def info_source():
     else:
         st.caption("Fonte de dados: **CSVs** em `data/kpis/` (fallback).")
 
-def plot_bar_fmt(fig, ycol, escala):
+def plot_bar_fmt(fig, escala: str, compact: bool = False):
+    # hover com customdata (escapar chaves no f-string)
     fig.update_traces(
         texttemplate="%{text}",
         hovertemplate="<b>%{x}</b><br>" +
                       f"{label_valor(escala)}: %{{customdata}}<extra></extra>"
     )
+    # layout compacto opcional
+    base_font = 13 if not compact else 11
+    tick_angle = 45 if not compact else 0
     fig.update_layout(
-        uniformtext_minsize=8, uniformtext_mode="hide",
-        margin=dict(l=10, r=10, t=30, b=10),
-        xaxis_tickangle=45
+        font=dict(size=base_font),
+        uniformtext_minsize=8 if not compact else 6,
+        uniformtext_mode="hide",
+        margin=dict(l=8 if compact else 10, r=8 if compact else 10, t=26 if compact else 30, b=8 if compact else 10),
+        xaxis_tickangle=tick_angle,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.25 if compact else -0.15, x=0)
     )
     return fig
 
@@ -258,6 +283,9 @@ top_n = st.sidebar.slider("Top N", 5, 30, 15)
 metrica_ent = st.sidebar.radio("Métrica para 'por Entidade'", ["pago", "liquidado", "empenhado"], index=0, horizontal=True)
 busca_ent = st.sidebar.text_input("Filtro de entidade (contém)", value="").strip()
 
+# Novo: modo compacto opcional para gráficos (não afeta desktop se desligado)
+compact_mode = st.sidebar.checkbox("Modo compacto (mobile)", value=False, help="Reduz fontes, margens e ângulo do eixo X nos gráficos.")
+
 show_legend_codigo = st.sidebar.checkbox("Mostrar legenda por código no 'Receita por Tipo'", value=False)
 
 st.title("📊 Monitor de Execução Orçamentária — Londrina")
@@ -343,11 +371,15 @@ with tab_despesa:
                 labels={"valor_escala": label_valor(escala), "entidade": ""}
             )
             fig.update_xaxes(categoryorder="total descending")
-            fig = plot_bar_fmt(fig, "valor_escala", escala)
-            st.plotly_chart(fig, use_container_width=True)
+            fig = plot_bar_fmt(fig, escala, compact=compact_mode)
+            st.plotly_chart(fig, use_container_width=True, config={"responsive": True, "displayModeBar": False})
 
             with st.expander("Dados usados neste gráfico"):
-                st.dataframe(ent_plot[["entidade", metrica_ent]].rename(columns={metrica_ent: "valor (bruto)"}))
+                st.dataframe(
+                    ent_plot[["entidade", metrica_ent]].rename(columns={metrica_ent: "valor (bruto)"}),
+                    use_container_width=True,
+                    height=300 if compact_mode else None
+                )
                 download_df_button(ent_plot[["entidade", metrica_ent]], f"despesa_por_entidade_{year}.csv", "Baixar CSV")
     else:
         st.info("Não há dados de despesa por entidade para o ano.")
@@ -391,12 +423,16 @@ with tab_receita:
                           + "<br>" + f"{label_valor(escala)}: %{{customdata[0]}}<extra></extra>"
         )
         fig.update_xaxes(categoryorder="total descending")
-        fig = plot_bar_fmt(fig, "valor_escala", escala)
-        st.plotly_chart(fig, use_container_width=True)
+        fig = plot_bar_fmt(fig, escala, compact=compact_mode)
+        st.plotly_chart(fig, use_container_width=True, config={"responsive": True, "displayModeBar": False})
 
         with st.expander("Dados usados neste gráfico"):
             cols = ["codigo", "tipo", ycol] if "codigo" in rec_tipo.columns else ["tipo", ycol]
-            st.dataframe(rec_tipo[cols].rename(columns={ycol: "valor (bruto)"}))
+            st.dataframe(
+                rec_tipo[cols].rename(columns={ycol: "valor (bruto)"}),
+                use_container_width=True,
+                height=300 if compact_mode else None
+            )
             download_df_button(rec_tipo[cols], f"receita_por_tipo_{year}.csv", "Baixar CSV")
     else:
         st.info("Sem dados de receita por tipo para o ano.")
@@ -427,7 +463,12 @@ with tab_serie:
         )
         if show_vals:
             fig.update_traces(mode="lines+markers+text", textposition="top center", texttemplate="%{y:.2s}")
-        st.plotly_chart(fig, use_container_width=True)
+        # aplica compacidade geral
+        fig.update_layout(font=dict(size=13 if not compact_mode else 11),
+                          margin=dict(l=8 if compact_mode else 10, r=8 if compact_mode else 10,
+                                      t=26 if compact_mode else 30, b=8 if compact_mode else 10),
+                          legend=dict(orientation="h", yanchor="bottom", y=-0.25 if compact_mode else -0.15, x=0))
+        st.plotly_chart(fig, use_container_width=True, config={"responsive": True, "displayModeBar": False})
     else:
         st.info("Sem série anual consolidada.")
 

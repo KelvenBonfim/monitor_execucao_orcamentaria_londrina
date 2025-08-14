@@ -1,2 +1,2 @@
-ano,liquidado,arrecadado,superavit_deficit,resultado_pct_despesa,resultado_pct_receita
-2023,3462923251.76,3833933844.1699996,371010592.4099994,0.10713797720507855,0.09677021239533638
+ano,pago,arrecadado,previsto,resultado,diff_arrecadado_previsto,diff_previsto_arrecadado
+2023,3429915902.64,3833933844.17,3629134000.0,404017941.5300002,204799844.17000008,-204799844.17000008

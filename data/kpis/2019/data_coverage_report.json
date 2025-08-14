@@ -1,7 +1,16 @@
 {
-  "fonte": "db",
   "ano": 2019,
-  "tem_fato_despesa": true,
-  "tem_fato_receita": true,
-  "has_raw": false
+  "despesa": {
+    "linhas": 12,
+    "entidades": 12,
+    "empenhado": 2374025965.81,
+    "liquidado": 2281001880.04,
+    "pago": 2291533499.05
+  },
+  "receita": {
+    "linhas": 27,
+    "codigos": 16,
+    "previsto": 2209262000.0,
+    "arrecadado": 2197650978.24
+  }
 }

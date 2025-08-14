@@ -1,13 +1,13 @@
-ano,entidade,empenhado,liquidado,pago,pago_share
-2021,Prefeitura do Município de Londrina,1256167362.65,1117996764.32,1109741361.43,0.4383167588941748
-2021,Fundo Municipal de Saúde de Londrina,886797239.08,816753504.42,815171806.69,0.3219700343419231
-2021,Fundo de Previdência Social dos Servidores Municipais de Londrina,379347572.17,377618427.65,377550378.17,0.14912182588697984
-2021,Fundo de Urbanização de Londrina,104978892.24,96216118.51,94374701.11,0.037275363926994584
-2021,Fundo de Assistência à Saúde dos Servidores Municipais de Londrina,65134069.72,58521024.09,58468576.3,0.023093450196313425
-2021,Câmara Municipal de Londrina,33071677.89,32598127.39,32589775.81,0.012872048751719906
-2021,Administração dos Cemitérios e Serviços Funerários de Londrina - ACESF,15791204.4,14808941.57,14637301.37,0.005781324116088068
-2021,Caixa de Assist.Aposent. Pensões dos Servidores Municipais de Londrina,10019582.39,9610595.29,9608870.01,0.0037952345526632
-2021,Fundação de Esportes de Londrina,7957963.97,7455534.75,7768382.77,0.0030682936366434894
-2021,Instituto de Desenvolvimento de Londrina - CODEL,7630596.64,6838828.5,6825611.59,0.0026959254233293976
-2021,Instituto de Pesquisa e Planejamento Urbano de Londrina - IPPUL,5850286.29,5159195.27,5062643.6,0.0019996024400937037
-2021,Autarquia Municipal de Saúde - AMS,28675.35,25667.22,25667.22,1.0137833076462645e-05
+ano,entidade,empenhado,liquidado,pago
+2021,Prefeitura do Município de Londrina,1256167362.65,1117996764.32,1109741361.43
+2021,Fundo Municipal de Saúde de Londrina,886797239.08,816753504.42,815171806.69
+2021,Fundo de Previdência Social dos Servidores Municipais de Londrina,379347572.17,377618427.65,377550378.17
+2021,Fundo de Urbanização de Londrina,104978892.24,96216118.51,94374701.11
+2021,Fundo de Assistência à Saúde dos Servidores Municipais de Londrina,65134069.72,58521024.09,58468576.3
+2021,Câmara Municipal de Londrina,33071677.89,32598127.39,32589775.81
+2021,Administração dos Cemitérios e Serviços Funerários de Londrina - ACESF,15791204.4,14808941.57,14637301.37
+2021,Caixa de Assist.Aposent. Pensões dos Servidores Municipais de Londrina,10019582.39,9610595.29,9608870.01
+2021,Fundação de Esportes de Londrina,7957963.97,7455534.75,7768382.77
+2021,Instituto de Desenvolvimento de Londrina - CODEL,7630596.64,6838828.5,6825611.59
+2021,Instituto de Pesquisa e Planejamento Urbano de Londrina - IPPUL,5850286.29,5159195.27,5062643.6
+2021,Autarquia Municipal de Saúde - AMS,28675.35,25667.22,25667.22

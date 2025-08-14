@@ -1,13 +1,13 @@
-ano,entidade,empenhado,liquidado,pago,pago_share
-2024,Prefeitura do Município de Londrina,2067394308.02,2061597363.34,2034118266.75,0.5224408376787736
-2024,Fundo Municipal de Saúde de Londrina,1089602009.63,1028028082.29,1023157548.86,0.26278672958275723
-2024,Fundo de Previdência Social dos Servidores Municipais de Londrina,620514067.27,618380516.84,575330753.06,0.1477673572300542
-2024,Fundo de Urbanização de Londrina,163651336.3,144797961.72,145389227.4,0.03734161921356026
-2024,Câmara Municipal de Londrina,46809354.26,45835021.02,45612483.61,0.011715063246490423
-2024,Administração dos Cemitérios e Serviços Funerários de Londrina - ACESF,18930430.45,17752086.68,17466245.73,0.0044860125389189105
-2024,Instituto de Desenvolvimento de Londrina - CODEL,13007633.93,16711234.19,16453956.62,0.004226017247963442
-2024,Fundação de Esportes de Londrina,13098745.98,13646844.57,13837378.95,0.003553978137892177
-2024,Caixa de Assist.Aposent. Pensões dos Servidores Municipais de Londrina,15118280.26,13666817.12,13507785.26,0.0034693256344896298
-2024,Instituto de Pesquisa e Planejamento Urbano de Londrina - IPPUL,8215847.65,8079440.02,8096477.19,0.0020794908509174483
-2024,Autarquia Municipal de Saúde - AMS,328112.67,318408.59,331331.73,8.509889980356386e-05
-2024,Fundo de Assistência à Saúde dos Servidores Municipais de Londrina,198969.72,188716.45,188716.45,4.846973837921973e-05
+ano,entidade,empenhado,liquidado,pago
+2024,Prefeitura do Município de Londrina,2067394308.02,2061597363.34,2034118266.75
+2024,Fundo Municipal de Saúde de Londrina,1089602009.63,1028028082.29,1023157548.86
+2024,Fundo de Previdência Social dos Servidores Municipais de Londrina,620514067.27,618380516.84,575330753.06
+2024,Fundo de Urbanização de Londrina,163651336.3,144797961.72,145389227.4
+2024,Câmara Municipal de Londrina,46809354.26,45835021.02,45612483.61
+2024,Administração dos Cemitérios e Serviços Funerários de Londrina - ACESF,18930430.45,17752086.68,17466245.73
+2024,Instituto de Desenvolvimento de Londrina - CODEL,13007633.93,16711234.19,16453956.62
+2024,Fundação de Esportes de Londrina,13098745.98,13646844.57,13837378.95
+2024,Caixa de Assist.Aposent. Pensões dos Servidores Municipais de Londrina,15118280.26,13666817.12,13507785.26
+2024,Instituto de Pesquisa e Planejamento Urbano de Londrina - IPPUL,8215847.65,8079440.02,8096477.19
+2024,Autarquia Municipal de Saúde - AMS,328112.67,318408.59,331331.73
+2024,Fundo de Assistência à Saúde dos Servidores Municipais de Londrina,198969.72,188716.45,188716.45

@@ -1,2 +1,2 @@
-ano,fd_empenhado,fd_liquidado,fd_pago,stg_empenhado,stg_liquidado,stg_pago,fd_previsto,fd_arrecadado,stg_previsto,stg_arrecadado,diff_empenhado,diff_liquidado,diff_pago,diff_previsto,diff_arrecadado
-2020,2548487073.46,2433557815.24,2414866931.0,2427826175.01,2433557815.24,2414866931.0,2251771000.0,2484610066.89,2251771000.0,2484610066.89,120660898.44999981,0.0,0.0,0.0,0.0
+ano,despesa_empenhado,despesa_liquidado,despesa_pago,receita_previsto,receita_arrecadado
+2020,2548487073.46,2433557815.24,2414866931.0,2251771000.0,2484610066.89

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# v1.1 — sniff de separador, utf-8-sig, normalização de colunas, “total” opcional, cria/atualiza staging.
+# v1.2 — mantém v1.1 e adiciona: varredura em raw/{receitas,empenhadas,liquidadas,pagas},
+# roteamento por subpastas, coerção mínima por tabela destino (Entidade/Líquido),
+# compat extra para 'ano'/'exercicio' e 'líquido' vs 'liquido'.
 
 import os, sys, re, json, traceback, unicodedata
 from pathlib import Path
@@ -125,10 +127,10 @@ def insert_df(conn, schema, table, df):
 # ---------- sniff de separador/encoding ----------
 def sniff_sep_and_encoding(path: Path):
     # tenta utf-8-sig; se falhar, latin-1
-    encodings = ["utf-8-sig", "latin-1"]
+    encodings = ["utf-8-sig", "latin-1", "utf-8"]
     with open(path, "rb") as fh:
         raw = fh.read(4096)
-    sample = None
+    sample = None; encoding = None
     for enc in encodings:
         try:
             sample = raw.decode(enc)
@@ -235,27 +237,58 @@ def route_table(root: Path, file_path: Path) -> str:
     return "stg_outros"
 
 # ---------- coerção mínima por destino (garante o “formato esperado”) ----------
-def coerce_for_table(df: pd.DataFrame, table: str) -> pd.DataFrame:
-    # só reorganiza/garante colunas-chave se elas existem; não cria números do nada.
-    if table == "stg_receitas":
-        # deve ter 8 colunas: ano,codigo,especificacao,subitem,previsao,arrecadacao,para_mais,para_menos
-        wanted = ["ano","codigo","especificacao","subitem","previsao","arrecadacao","para_mais","para_menos"]
-        have = [c for c in wanted if c in df.columns]
-        if len(have) >= 6:  # aceita sem para_mais/para_menos em versões antigas
-            df = df[[c for c in wanted if c in df.columns]]
+def _first_present(df: pd.DataFrame, candidates: list[str]) -> str | None:
+    for c in candidates:
+        if c in df.columns:
+            return c
+    return None
+
+def coerce_for_table(df: pd.DataFrame, target: str, verbose=False) -> pd.DataFrame:
+    # RECEITAS (Anexo 10)
+    if target == "stg_receitas":
+        # nomes usuais: ano|exercicio, codigo, especificacao, subitem, previsao, arrecadacao, para_mais, para_menos
+        # aceita variações mínimas
+        if "exercicio" not in df.columns and "ano" in df.columns:
+            df = df.rename(columns={"ano": "exercicio"})
+        # garante colunas (se não tiver, cria vazia)
+        needed = ["exercicio","codigo","especificacao","subitem","previsao","arrecadacao","para_mais","para_menos"]
+        for c in needed:
+            if c not in df.columns:
+                df[c] = ""
+        # ordena
+        df = df[needed]
         return df
 
-    if table == "stg_despesas_empenhadas":
-        # Exercício;Entidade;Empenhado;Estornado;Reversão;Líquido
-        # após normalização → exercicio,entidade,empenhado,estornado,reversão,líquido  (acentos preservados)
-        return df
+    # DESPESAS (Equiplano): total vem em "Líquido" nos três relatórios
+    if target in ("stg_despesas_empenhadas","stg_despesas_liquidadas","stg_despesas_pagas"):
+        # nomes normalizados já estão minúsculos; pode haver acento: 'líquido'
+        liquido_col = _first_present(df, ["líquido", "liquido"])
+        if liquidity := liquido_col:
+            pass
+        else:
+            # às vezes vem com variações tipo 'liquido_total'
+            liquido_col = _first_present(df, ["liquido_total","líquido_total","liquido___total"])
+        if liquido_col is None:
+            if verbose:
+                print("   ⚠️ coluna de total ('líquido'/'liquido') não encontrada — mantendo como está")
+            return df
 
-    if table == "stg_despesas_liquidadas":
-        # exercicio, entidade, liquidado_-_orçamento, estornado_-_orçamento, liquidado_-_restos_a_pagar, estornado_-_restos_a_pagar, líquido
-        return df
+        # 'Entidade' já vira 'entidade' na normalização de cabeçalhos
+        if "entidade" not in df.columns:
+            df["entidade"] = ""
 
-    if table == "stg_despesas_pagas":
-        # exercicio, entidade, pago_-_orçamento, estornado_-_orçamento, pago_-_restos_a_pagar, estornado_-_restos_a_pagar, líquido
+        # 'exercicio' pode vir como 'ano'
+        if "exercicio" not in df.columns and "ano" in df.columns:
+            df = df.rename(columns={"ano":"exercicio"})
+
+        # reordena para trio mínimo
+        base = ["exercicio","entidade",liquido_col]
+        for c in base:
+            if c not in df.columns:
+                df[c] = ""
+        df = df[base]
+        # padroniza o nome da coluna total para 'liquido' (sem acento) na staging
+        df = df.rename(columns={liquido_col: "liquido"})
         return df
 
     return df
@@ -282,7 +315,7 @@ def main():
         print(f"\n⚙️  Carregando {rel} → {args.schema}.{target}")
         try:
             df = load_csv(f, args.add_year, args.dedupe, args.numeric, args.verbose)
-            df = coerce_for_table(df, target)
+            df = coerce_for_table(df, target, verbose=args.verbose)
 
             if df.empty:
                 print("   (vazio) — ignorado."); continue

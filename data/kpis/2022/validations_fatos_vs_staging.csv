@@ -1,2 +1,2 @@
-ano,fd_empenhado,fd_liquidado,fd_pago,stg_empenhado,stg_liquidado,stg_pago,fd_previsto,fd_arrecadado,stg_previsto,stg_arrecadado,diff_empenhado,diff_liquidado,diff_pago,diff_previsto,diff_arrecadado
-2022,3070816108.52,2900478567.09,2859632841.1400003,2941162504.19,2900478567.09,2859632841.14,2983482000.0,3390230129.7400002,2983482000.0,3390230129.74,129653604.32999992,0.0,4.76837158203125e-07,0.0,4.76837158203125e-07
+ano,despesa_empenhado,despesa_liquidado,despesa_pago,receita_previsto,receita_arrecadado
+2022,3070816108.52,2900478567.09,2859632841.14,2983482000.0,3390230129.74

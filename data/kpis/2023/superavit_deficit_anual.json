@@ -1,1 +1,23 @@
-[{"ano":2023,"liquidado":3462923251.7600002289,"arrecadado":3833933844.1699995995,"superavit_deficit":371010592.4099993706,"resultado_pct_despesa":0.1071379772,"resultado_pct_receita":0.0967702124}]
+{
+  "rows": 1,
+  "cols": [
+    "ano",
+    "pago",
+    "arrecadado",
+    "previsto",
+    "resultado",
+    "diff_arrecadado_previsto",
+    "diff_previsto_arrecadado"
+  ],
+  "sample": [
+    {
+      "ano": 2023,
+      "pago": 3429915902.64,
+      "arrecadado": 3833933844.17,
+      "previsto": 3629134000.0,
+      "resultado": 404017941.5300002,
+      "diff_arrecadado_previsto": 204799844.17000008,
+      "diff_previsto_arrecadado": -204799844.17000008
+    }
+  ]
+}

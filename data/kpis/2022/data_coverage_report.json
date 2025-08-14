@@ -1,7 +1,16 @@
 {
-  "fonte": "db",
   "ano": 2022,
-  "tem_fato_despesa": true,
-  "tem_fato_receita": true,
-  "has_raw": false
+  "despesa": {
+    "linhas": 12,
+    "entidades": 12,
+    "empenhado": 3070816108.52,
+    "liquidado": 2900478567.09,
+    "pago": 2859632841.14
+  },
+  "receita": {
+    "linhas": 26,
+    "codigos": 17,
+    "previsto": 2983482000.0,
+    "arrecadado": 3390230129.74
+  }
 }

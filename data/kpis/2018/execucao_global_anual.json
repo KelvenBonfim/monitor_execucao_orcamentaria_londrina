@@ -1,1 +1,17 @@
-[{"ano":2018,"empenhado":2122822735.0799999237,"liquidado":2000080972.1100001335,"pago":1973966603.25,"pct_pago_sobre_empenhado":0.9298782092,"pct_liquidado_sobre_empenhado":0.9421799282}]
+{
+  "rows": 1,
+  "cols": [
+    "ano",
+    "empenhado",
+    "liquidado",
+    "pago"
+  ],
+  "sample": [
+    {
+      "ano": 2018,
+      "empenhado": 2122822735.08,
+      "liquidado": 2000080972.11,
+      "pago": 1973966603.25
+    }
+  ]
+}

@@ -1,2 +1,2 @@
-ano,fd_empenhado,fd_liquidado,fd_pago,stg_empenhado,stg_liquidado,stg_pago,fd_previsto,fd_arrecadado,stg_previsto,stg_arrecadado,diff_empenhado,diff_liquidado,diff_pago,diff_previsto,diff_arrecadado
-2018,2122822735.08,2000080972.1100001,1973966603.25,2049602956.12,2000080972.11,1973966603.25,2230698000.0,1931007935.39,2230698000.0,1931007935.39,73219778.96000004,2.384185791015625e-07,0.0,0.0,0.0
+ano,despesa_empenhado,despesa_liquidado,despesa_pago,receita_previsto,receita_arrecadado
+2018,2122822735.08,2000080972.11,1973966603.25,2230698000.0,1931007935.39

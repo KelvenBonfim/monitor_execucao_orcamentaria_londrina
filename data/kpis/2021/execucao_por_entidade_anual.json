@@ -1,1 +1,47 @@
-[{"ano":2021,"entidade":"Prefeitura do Município de Londrina","empenhado":1256167362.6500000954,"liquidado":1117996764.3199999332,"pago":1109741361.4300000668,"pago_share":0.4383167589},{"ano":2021,"entidade":"Fundo Municipal de Saúde de Londrina","empenhado":886797239.0800000429,"liquidado":816753504.4199999571,"pago":815171806.6900000572,"pago_share":0.3219700343},{"ano":2021,"entidade":"Fundo de Previdência Social dos Servidores Municipais de Londrina","empenhado":379347572.1700000167,"liquidado":377618427.6499999762,"pago":377550378.1700000167,"pago_share":0.1491218259},{"ano":2021,"entidade":"Fundo de Urbanização de Londrina","empenhado":104978892.2399999946,"liquidado":96216118.5100000054,"pago":94374701.1099999994,"pago_share":0.0372753639},{"ano":2021,"entidade":"Fundo de Assistência à Saúde dos Servidores Municipais de Londrina","empenhado":65134069.7199999988,"liquidado":58521024.0900000036,"pago":58468576.299999997,"pago_share":0.0230934502},{"ano":2021,"entidade":"Câmara Municipal de Londrina","empenhado":33071677.8900000006,"liquidado":32598127.3900000006,"pago":32589775.8099999987,"pago_share":0.0128720488},{"ano":2021,"entidade":"Administração dos Cemitérios e Serviços Funerários de Londrina - ACESF","empenhado":15791204.4000000004,"liquidado":14808941.5700000003,"pago":14637301.3699999992,"pago_share":0.0057813241},{"ano":2021,"entidade":"Caixa de Assist.Aposent. Pensões dos Servidores Municipais de Londrina","empenhado":10019582.3900000006,"liquidado":9610595.2899999991,"pago":9608870.0099999998,"pago_share":0.0037952346},{"ano":2021,"entidade":"Fundação de Esportes de Londrina","empenhado":7957963.9699999997,"liquidado":7455534.75,"pago":7768382.7699999996,"pago_share":0.0030682936},{"ano":2021,"entidade":"Instituto de Desenvolvimento de Londrina - CODEL","empenhado":7630596.6399999997,"liquidado":6838828.5,"pago":6825611.5899999999,"pago_share":0.0026959254},{"ano":2021,"entidade":"Instituto de Pesquisa e Planejamento Urbano de Londrina - IPPUL","empenhado":5850286.29,"liquidado":5159195.2699999996,"pago":5062643.5999999996,"pago_share":0.0019996024},{"ano":2021,"entidade":"Autarquia Municipal de Saúde - AMS","empenhado":28675.35,"liquidado":25667.22,"pago":25667.22,"pago_share":0.0000101378}]
+{
+  "rows": 12,
+  "cols": [
+    "ano",
+    "entidade",
+    "empenhado",
+    "liquidado",
+    "pago"
+  ],
+  "sample": [
+    {
+      "ano": 2021,
+      "entidade": "Prefeitura do Município de Londrina",
+      "empenhado": 1256167362.65,
+      "liquidado": 1117996764.32,
+      "pago": 1109741361.43
+    },
+    {
+      "ano": 2021,
+      "entidade": "Fundo Municipal de Saúde de Londrina",
+      "empenhado": 886797239.08,
+      "liquidado": 816753504.42,
+      "pago": 815171806.69
+    },
+    {
+      "ano": 2021,
+      "entidade": "Fundo de Previdência Social dos Servidores Municipais de Londrina",
+      "empenhado": 379347572.17,
+      "liquidado": 377618427.65,
+      "pago": 377550378.17
+    },
+    {
+      "ano": 2021,
+      "entidade": "Fundo de Urbanização de Londrina",
+      "empenhado": 104978892.24,
+      "liquidado": 96216118.51,
+      "pago": 94374701.11
+    },
+    {
+      "ano": 2021,
+      "entidade": "Fundo de Assistência à Saúde dos Servidores Municipais de Londrina",
+      "empenhado": 65134069.72,
+      "liquidado": 58521024.09,
+      "pago": 58468576.3
+    }
+  ]
+}

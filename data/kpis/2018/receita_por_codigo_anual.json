@@ -1,0 +1,41 @@
+{
+  "rows": 17,
+  "cols": [
+    "ano",
+    "codigo",
+    "previsao",
+    "arrecadacao"
+  ],
+  "sample": [
+    {
+      "ano": 2018,
+      "codigo": "17",
+      "previsao": 1017856000.0,
+      "arrecadacao": 1004479118.67
+    },
+    {
+      "ano": 2018,
+      "codigo": "11",
+      "previsao": 856023000.0,
+      "arrecadacao": 723419023.88
+    },
+    {
+      "ano": 2018,
+      "codigo": "12",
+      "previsao": 38233000.0,
+      "arrecadacao": 50158211.57
+    },
+    {
+      "ano": 2018,
+      "codigo": "16",
+      "previsao": 55514000.0,
+      "arrecadacao": 49810982.99
+    },
+    {
+      "ano": 2018,
+      "codigo": "19",
+      "previsao": 32721000.0,
+      "arrecadacao": 34820676.28
+    }
+  ]
+}

@@ -1,7 +1,16 @@
 {
-  "fonte": "db",
   "ano": 2023,
-  "tem_fato_despesa": true,
-  "tem_fato_receita": true,
-  "has_raw": false
+  "despesa": {
+    "linhas": 12,
+    "entidades": 12,
+    "empenhado": 3620876605.31,
+    "liquidado": 3462923251.76,
+    "pago": 3429915902.64
+  },
+  "receita": {
+    "linhas": 32,
+    "codigos": 17,
+    "previsto": 3629134000.0,
+    "arrecadado": 3833933844.17
+  }
 }

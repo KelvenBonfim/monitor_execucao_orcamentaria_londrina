@@ -113,6 +113,20 @@ if USE_DB:
         """
         return pd.read_sql(text(sql), get_engine(), params={"ano": int(ano)})
 
+    @st.cache_data(show_spinner=False)
+    def db_receita_por_codigo(ano: int):
+        """Receita agrupada por código (tipo) para o ano."""
+        sql = """
+          SELECT codigo,
+                 SUM(COALESCE(previsao, 0))    AS previsao,
+                 SUM(COALESCE(arrecadacao, 0)) AS arrecadacao
+          FROM public.fato_receita
+          WHERE exercicio = :ano
+          GROUP BY codigo
+          ORDER BY arrecadacao DESC;
+        """
+        return pd.read_sql(text(sql), get_engine(), params={"ano": int(ano)})
+
 # =========================
 # Carregamento via CSV (fallback)
 # =========================
@@ -278,6 +292,41 @@ if not ent.empty:
         st.plotly_chart(fig, use_container_width=True)
 else:
     st.info("Não há dados de despesa por entidade para o ano.")
+
+# =========================
+# Receita por Código (ano selecionado)
+# =========================
+st.subheader("Receita por Código (ano selecionado)")
+if USE_DB:
+    rc = db_receita_por_codigo(year)
+else:
+    rc = fs_load_csv(year, "receita_por_codigo_anual")
+
+if not rc.empty:
+    # normaliza nomes (aceita maiúsculas/minúsculas)
+    cols_lower = {c.lower(): c for c in rc.columns}
+    codigo_col = cols_lower.get("codigo", "codigo")
+    prev_col   = cols_lower.get("previsao", "previsao") if "previsao" in cols_lower else None
+    arr_col    = cols_lower.get("arrecadacao", "arrecadacao")
+
+    rc_plot = rc[[codigo_col, arr_col] + ([prev_col] if prev_col and prev_col in rc.columns else [])].copy()
+    # escala
+    rc_plot[arr_col] = rc_plot[arr_col].astype(float).apply(lambda v: scale_number(v, escala))
+    if prev_col and prev_col in rc_plot.columns:
+        rc_plot[prev_col] = rc_plot[prev_col].astype(float).apply(lambda v: scale_number(v, escala))
+
+    rc_plot = rc_plot.sort_values(arr_col, ascending=False).head(top_n)
+    fig = px.bar(
+        rc_plot,
+        x=codigo_col,
+        y=arr_col,
+        text_auto=".2s",
+        labels={arr_col: label_valor(escala), codigo_col: "Código"}
+    )
+    fig.update_xaxes(tickangle=45)
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.caption("ℹ️ KPI `receita_por_codigo_anual.csv` não encontrado em `data/kpis/<ano>/` (ou DB sem dados).")
 
 # =========================
 # Seções adicionais (CSV-only)

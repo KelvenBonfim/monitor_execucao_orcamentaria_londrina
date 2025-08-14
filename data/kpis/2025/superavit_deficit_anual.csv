@@ -1,2 +1,2 @@
-ano,liquidado,arrecadado,superavit_deficit,resultado_pct_despesa,resultado_pct_receita
-2025,2424931552.32,2833208170.16,408276617.8399997,0.16836624417270252,0.14410399565413615
+ano,pago,arrecadado,previsto,resultado,diff_arrecadado_previsto,diff_previsto_arrecadado
+2025,2168138435.11,2833208170.16,4590263000.0,665069735.0499997,-1757054829.8400002,1757054829.8400002

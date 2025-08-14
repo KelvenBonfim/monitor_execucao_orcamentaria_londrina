@@ -1,7 +1,16 @@
 {
-  "fonte": "db",
   "ano": 2021,
-  "tem_fato_despesa": true,
-  "tem_fato_receita": true,
-  "has_raw": false
+  "despesa": {
+    "linhas": 12,
+    "entidades": 12,
+    "empenhado": 2772775122.79,
+    "liquidado": 2543602728.98,
+    "pago": 2531825076.07
+  },
+  "receita": {
+    "linhas": 28,
+    "codigos": 17,
+    "previsto": 2739532000.0,
+    "arrecadado": 2915259476.3
+  }
 }

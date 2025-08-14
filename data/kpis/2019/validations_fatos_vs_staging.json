@@ -1,1 +1,21 @@
-[{"ano":2019,"fd_empenhado":2374025965.8099999428,"fd_liquidado":2281001880.0399999619,"fd_pago":2291533499.0500001907,"stg_empenhado":2292407338.2699999809,"stg_liquidado":2281001880.0399999619,"stg_pago":2291533499.0500001907,"fd_previsto":2209262000.0,"fd_arrecadado":2197650978.2399997711,"stg_previsto":2209262000.0,"stg_arrecadado":2197650978.2399997711,"diff_empenhado":81618627.5399999619,"diff_liquidado":0.0,"diff_pago":0.0,"diff_previsto":0.0,"diff_arrecadado":0.0}]
+{
+  "rows": 1,
+  "cols": [
+    "ano",
+    "despesa_empenhado",
+    "despesa_liquidado",
+    "despesa_pago",
+    "receita_previsto",
+    "receita_arrecadado"
+  ],
+  "sample": [
+    {
+      "ano": 2019,
+      "despesa_empenhado": 2374025965.81,
+      "despesa_liquidado": 2281001880.04,
+      "despesa_pago": 2291533499.05,
+      "receita_previsto": 2209262000.0,
+      "receita_arrecadado": 2197650978.24
+    }
+  ]
+}

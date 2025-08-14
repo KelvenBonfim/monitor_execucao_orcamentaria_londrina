@@ -44,7 +44,7 @@ def plot_bar_fmt(fig, ycol, escala):
     fig.update_traces(
         texttemplate="%{text}",
         hovertemplate="<b>%{x}</b><br>" +
-                      f"{label_valor(escala)}: %{customdata}<extra></extra>"
+                      f"{label_valor(escala)}: %{{customdata}}<extra></extra>"
     )
     fig.update_layout(
         uniformtext_minsize=8, uniformtext_mode="hide",
@@ -386,9 +386,9 @@ with tab_receita:
             **color_kw
         )
         fig.update_traces(
-            hovertemplate="<b>%{x}</b>" +
-                          ("<br>Código: %{customdata[1]}" if show_legend_codigo and "codigo" in rec_tipo.columns else "") +
-                          "<br>" + f"{label_valor(escala)}: %{customdata[0]}<extra></extra>"
+            hovertemplate="<b>%{x}</b>"
+                          + ("<br>Código: %{{customdata[1]}}" if show_legend_codigo and "codigo" in rec_tipo.columns else "")
+                          + "<br>" + f"{label_valor(escala)}: %{{customdata[0]}}<extra></extra>"
         )
         fig.update_xaxes(categoryorder="total descending")
         fig = plot_bar_fmt(fig, "valor_escala", escala)

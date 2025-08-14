@@ -3,6 +3,65 @@
 This project is a **Budget Execution Monitoring System** for Londrina, allowing analysis of municipal spending and revenue execution over multiple years.  
 It supports **two data modes**: CSV-based (local KPIs) and Database mode (Neon-hosted PostgreSQL).
 
+## Running the Pipeline (scripts 01–09)
+
+### 01 — Fetch yearly CSVs (Equiplano / DisplayTag)
+Downloads expenses (empenhadas/liquidadas/pagas) CSVs from the legacy portal.
+```bash
+python scripts/01_fetch_equiplano_ano.py download --anos 2018-2025 --saida raw/ --verbose
+# or only some stages
+python scripts/01_fetch_equiplano_ano.py download --anos 2024-2025 --stages liquidadas,pagas --saida raw/
+# optional: load to staging later with 04 or 05
+```
+
+### 02 — Fetch Receita (Anexo 10) — request PDF
+Builds the POST payload and fetches the Anexo 10 PDF (per year), no parsing yet.
+```bash
+python scripts/02_fetch_receita_prev_arrec.py --anos 2018-2025 --out raw/receitas/
+```
+
+### 03 — Parse Anexo 10 PDF → CSV
+Extracts tables from the Anexo 10 PDF and normalizes BR numbers to floats.
+```bash
+python scripts/03_anexo10_pdf_to_csv.py --in raw/receitas/ --out raw/receitas_csv/
+```
+
+### 04 — Load CSVs to Postgres (staging)
+Loads `raw/` CSVs into `public.stg_*` using `psycopg2/SQLAlchemy`. Requires `DATABASE_URL`.
+```bash
+python scripts/04_load_csv_to_postgres.py --schema public --staging public --csv raw/
+```
+
+### 05 — Build fact tables / models
+Creates/refreshes `public.fato_despesa` and `public.fato_receita` + derived summaries.
+```bash
+python scripts/05_build_models.py --schema public --staging public --years 2018-2025 --recreate --verbose
+```
+
+### 06 — Quality checks
+Cross-validate numeric columns, detect anomalies, and emit reports (CSV/JSON).
+```bash
+python scripts/06_quality_checks.py --schema public --years 2018-2025 --out outputs/quality/
+```
+
+### 07 — Backfill histórico
+Recomputes/aligns historical series from staging and facts.
+```bash
+python scripts/07_backfill_historico.py --schema public --years 2018-2025 --out outputs/backfill/
+```
+
+### 08 — Reconcile RAW vs Portal snapshot
+Strict reconciliation between current portal snapshot and your RAW.
+```bash
+python scripts/08_reconcile_raw_vs_portal.py --raw raw/ --out outputs/reconcile_raw_vs_portal/
+```
+
+### 09 — Export KPIs (CSV for the app)
+Exports yearly KPIs used by the Streamlit app (CSV files in `data/kpis/{YEAR}/`).
+```bash
+python scripts/09_export_kpis.py --schema public --years 2018-2025 --out data/kpis/
+```
+
 ## 📂 Project Structure
 
 ```
@@ -56,6 +115,9 @@ monitor_execucao_orcamentaria_londrina/
 │   ├── 07_backfill_historico.py        # Backfills historical data into the database
 │   ├── 08_reconcile_raw_vs_portal.py   # Performs strict reconciliation with the portal
 │   └── 09_export_kpis.py               # Generates KPI files for CSV mode
+├─ tests/
+│   ├─ conftest.py
+│   └─ test_scripts.py
 ├── app.py                          # Streamlit application for dashboard visualization
 ├── LICENCE                         # License file (MIT)
 ├── README.md                       # Main documentation (English)

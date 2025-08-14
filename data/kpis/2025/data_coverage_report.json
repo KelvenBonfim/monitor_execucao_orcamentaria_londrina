@@ -1,16 +1,20 @@
 {
   "ano": 2025,
-  "despesa": {
-    "linhas": 12,
-    "entidades": 12,
-    "empenhado": 2475516838.38,
-    "liquidado": 2424931552.32,
-    "pago": 2168138435.11
-  },
-  "receita": {
-    "linhas": 31,
-    "codigos": 17,
-    "previsto": 4590263000.0,
-    "arrecadado": 2833208170.16
-  }
+  "checks": [
+    {
+      "name": "fato_despesa_totais",
+      "values": {
+        "empenhado": 2475516838.38,
+        "liquidado": 2424931552.32,
+        "pago": 2168138435.11
+      }
+    },
+    {
+      "name": "fato_receita_totais",
+      "values": {
+        "previsto": 4590263000.0,
+        "arrecadado": 2833208170.16
+      }
+    }
+  ]
 }

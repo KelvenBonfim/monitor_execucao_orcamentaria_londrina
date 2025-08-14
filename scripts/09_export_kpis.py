@@ -24,8 +24,9 @@ import argparse
 import os
 import sys
 import json
+from decimal import Decimal
 from pathlib import Path
-from typing import List
+from typing import List, Any
 
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -123,9 +124,9 @@ def write_csv_and_json(df: pd.DataFrame, out_csv: Path, out_json: Path | None = 
     df.to_csv(out_csv, index=False)
     if out_json:
         payload = {
-            "rows": len(df),
-            "cols": list(df.columns),
-            "sample": df.head(json_preview_rows).to_dict(orient="records"),
+            "rows": int(len(df)),
+            "cols": list(map(str, df.columns)),
+            "sample": json_compat(df.head(json_preview_rows).to_dict(orient="records")),
         }
         out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
 
@@ -139,6 +140,21 @@ def safe_first_scalar(x):
             return None
         return x.iloc[0]
     return x
+
+
+def json_compat(obj: Any):
+    """
+    Converte estruturas com Decimal/NaN para tipos compatíveis com JSON.
+    """
+    if isinstance(obj, Decimal):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {k: json_compat(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [json_compat(v) for v in obj]
+    if isinstance(obj, (pd.Timestamp, pd.Timedelta)):
+        return str(obj)
+    return obj
 
 
 # --------------------------
@@ -326,62 +342,8 @@ def export_validations_fatos_vs_staging(engine: Engine, schema: str, outdir: Pat
     log(f"📝 validations_fatos_vs_staging → {out_csv} | {out_json}", verbose)
 
 
-def export_data_coverage(engine: Engine, schema: str, outdir: Path, ano: int, verbose: bool):
-    """Gera um JSON com estatísticas simples de cobertura para o ano (sem Decimals)."""
-    cov = {"ano": int(ano)}
-    with engine.connect() as conn:
-        # Despesa
-        qd = text(f"""
-            SELECT
-              COUNT(*)                                     AS linhas,
-              COUNT(DISTINCT entidade)                     AS entidades,
-              CAST(COALESCE(SUM(valor_empenhado), 0) AS double precision) AS empenhado,
-              CAST(COALESCE(SUM(valor_liquidado), 0) AS double precision) AS liquidado,
-              CAST(COALESCE(SUM(valor_pago),      0) AS double precision) AS pago
-            FROM {schema}.fato_despesa
-            WHERE exercicio = :ano
-        """)
-        rd = dict(conn.execute(qd, {"ano": int(ano)}).mappings().one())
-
-        # Receita
-        qr = text(f"""
-            SELECT
-              COUNT(*)                                        AS linhas,
-              COUNT(DISTINCT codigo)                          AS codigos,
-              CAST(COALESCE(SUM(previsao),    0) AS double precision) AS previsto,
-              CAST(COALESCE(SUM(arrecadacao), 0) AS double precision) AS arrecadado
-            FROM {schema}.fato_receita
-            WHERE exercicio = :ano
-        """)
-        rr = dict(conn.execute(qr, {"ano": int(ano)}).mappings().one())
-
-    # Força conversão para tipos builtin serializáveis
-    def _to_builtin(d):
-        out = {}
-        for k, v in d.items():
-            if v is None:
-                out[k] = None
-            elif isinstance(v, (int, float, str, bool)):
-                out[k] = v
-            else:
-                try:
-                    out[k] = float(v)
-                except Exception:
-                    out[k] = str(v)
-        return out
-
-    cov["despesa"] = _to_builtin(rd)
-    cov["receita"] = _to_builtin(rr)
-
-    out_json = outdir / str(ano) / "data_coverage_report.json"
-    ensure_dir(out_json.parent)
-    out_json.write_text(json.dumps(cov, ensure_ascii=False, indent=2))
-    log(f"📄 data_coverage_report → {out_json}", verbose)
-
-
-# ----- NOVOS KPIs com detecção dinâmica -----
+# ----- KPIs adicionais (com detecção dinâmica) -----
 def export_execucao_por_funcao_anual(engine: Engine, schema: str, outdir: Path, ano: int, verbose: bool):
-    # pula se não houver coluna de função
     try:
         funcao_col = pick_first_existing(
             engine, schema, "fato_despesa",
@@ -390,9 +352,6 @@ def export_execucao_por_funcao_anual(engine: Engine, schema: str, outdir: Path, 
     except RuntimeError as e:
         log(f"ℹ️ Função indisponível no fato_despesa — pulando esta KPI ({e})", verbose)
         return
-
-    if verbose:
-        log(f"🔎 usando coluna de FUNÇÃO: {funcao_col}", True)
 
     sql = text(f"""
         WITH base AS (
@@ -415,6 +374,8 @@ def export_execucao_por_funcao_anual(engine: Engine, schema: str, outdir: Path, 
         ORDER BY pago DESC;
     """)
     df = pd.read_sql(sql, engine, params={"ano": int(ano)})
+    if df.empty:
+        return
     out_csv = outdir / str(ano) / "execucao_por_funcao_anual.csv"
     ensure_dir(out_csv.parent)
     df.to_csv(out_csv, index=False)
@@ -422,7 +383,6 @@ def export_execucao_por_funcao_anual(engine: Engine, schema: str, outdir: Path, 
 
 
 def export_execucao_por_orgao_unidade_anual(engine: Engine, schema: str, outdir: Path, ano: int, verbose: bool):
-    # pula se não houver orgao/unidade
     try:
         orgao_col = pick_first_existing(
             engine, schema, "fato_despesa",
@@ -435,9 +395,6 @@ def export_execucao_por_orgao_unidade_anual(engine: Engine, schema: str, outdir:
     except RuntimeError as e:
         log(f"ℹ️ Órgão/Unidade indisponível no fato_despesa — pulando esta KPI ({e})", verbose)
         return
-
-    if verbose:
-        log(f"🔎 usando coluna de ÓRGÃO: {orgao_col} | UNIDADE: {unidade_col}", True)
 
     sql = text(f"""
         SELECT
@@ -453,6 +410,8 @@ def export_execucao_por_orgao_unidade_anual(engine: Engine, schema: str, outdir:
         ORDER BY pago DESC;
     """)
     df = pd.read_sql(sql, engine, params={"ano": int(ano)})
+    if df.empty:
+        return
     out_csv = outdir / str(ano) / "execucao_por_orgao_unidade_anual.csv"
     ensure_dir(out_csv.parent)
     df.to_csv(out_csv, index=False)
@@ -460,23 +419,111 @@ def export_execucao_por_orgao_unidade_anual(engine: Engine, schema: str, outdir:
 
 
 def export_receita_por_codigo_anual(engine: Engine, schema: str, outdir: Path, ano: int, verbose: bool):
-    """Nova KPI aderente ao seu dado atual: receita agregada por 'codigo' do Anexo 10."""
-    sql = text(f"""
-        SELECT exercicio::int AS ano,
-               codigo::text   AS codigo,
-               SUM(previsao)    AS previsao,
-               SUM(arrecadacao) AS arrecadacao
+    """
+    Agrupa por código trazendo um rótulo (especificacao) não vazio para cada código.
+    Funciona com ambos os esquemas de colunas da fato_receita (previsao/arrecadacao ou valor_previsto/valor_arrecadado).
+    """
+    # tentativas para colunas de valores
+    try_sql = [
+        f"""
+        SELECT
+          codigo,
+          MAX(especificacao) FILTER (WHERE COALESCE(BTRIM(especificacao),'') <> '') AS especificacao,
+          SUM(previsao)    AS previsao,
+          SUM(arrecadacao) AS arrecadacao
         FROM {schema}.fato_receita
         WHERE exercicio = :ano
-        GROUP BY 1,2
+        GROUP BY codigo
         ORDER BY arrecadacao DESC;
-    """)
-    df = pd.read_sql(sql, engine, params={"ano": int(ano)})
+        """,
+        f"""
+        SELECT
+          codigo,
+          MAX(especificacao) FILTER (WHERE COALESCE(BTRIM(especificacao),'') <> '') AS especificacao,
+          SUM(valor_previsto)    AS previsao,
+          SUM(valor_arrecadado)  AS arrecadacao
+        FROM {schema}.fato_receita
+        WHERE exercicio = :ano
+        GROUP BY codigo
+        ORDER BY arrecadacao DESC;
+        """,
+    ]
+    last_err = None
+    for sql_txt in try_sql:
+        try:
+            df = pd.read_sql(text(sql_txt), engine, params={"ano": int(ano)})
+            break
+        except Exception as e:
+            last_err = e
+            df = pd.DataFrame()
+    if df.empty and last_err:
+        log(f"⚠️ receita_por_codigo_anual: não foi possível consultar ({last_err})", verbose)
+        return
+
+    # limpa rótulos/códigos vazios
+    df["codigo"] = df["codigo"].astype(str).str.strip()
+    if "especificacao" in df.columns:
+        df["especificacao"] = df["especificacao"].astype(str).str.strip()
+    else:
+        df["especificacao"] = df["codigo"]
+    df = df[(df["codigo"] != "") & (df["especificacao"] != "")]
+
     out_csv = outdir / str(ano) / "receita_por_codigo_anual.csv"
     out_json = outdir / str(ano) / "receita_por_codigo_anual.json"
     write_csv_and_json(df, out_csv, out_json)
     log(f"📝 receita_por_codigo_anual → {out_csv} | {out_json}", verbose)
 
+
+def export_data_coverage(engine: Engine, schema: str, outdir: Path, ano: int, verbose: bool):
+    """
+    Relatório leve de cobertura/consistência por ano.
+    Detecta dinamicamente os nomes de colunas em fato_receita.
+    """
+    cov = {"ano": int(ano), "checks": []}
+
+    # --------- fato_despesa (fixo) ----------
+    sql_d = text(f"""
+        SELECT
+          SUM(valor_empenhado) AS empenhado,
+          SUM(valor_liquidado) AS liquidado,
+          SUM(valor_pago)      AS pago
+        FROM {schema}.fato_despesa
+        WHERE exercicio = :ano;
+    """)
+
+    # --------- fato_receita (dinâmico) ----------
+    # Alguns bancos criam com (previsao, arrecadacao); outros com (valor_previsto, valor_arrecadado).
+    prev_col = "previsao" if col_exists(engine, schema, "fato_receita", "previsao") \
+               else ("valor_previsto" if col_exists(engine, schema, "fato_receita", "valor_previsto") else None)
+    arr_col  = "arrecadacao" if col_exists(engine, schema, "fato_receita", "arrecadacao") \
+               else ("valor_arrecadado" if col_exists(engine, schema, "fato_receita", "valor_arrecadado") else None)
+
+    if prev_col and arr_col:
+        sql_r = text(f"""
+            SELECT
+              SUM(COALESCE({prev_col}, 0)) AS previsto,
+              SUM(COALESCE({arr_col},  0)) AS arrecadado
+            FROM {schema}.fato_receita
+            WHERE exercicio = :ano;
+        """)
+    else:
+        # Se por algum motivo tabela vazia/ausente, reporta zeros
+        sql_r = None
+
+    with engine.connect() as conn:
+        d = conn.execute(sql_d, {"ano": int(ano)}).mappings().first() or {}
+        if sql_r is not None:
+            r = conn.execute(sql_r, {"ano": int(ano)}).mappings().first() or {}
+        else:
+            r = {"previsto": 0, "arrecadado": 0}
+
+    cov["checks"].append({"name": "fato_despesa_totais", "values": json_compat(dict(d))})
+    cov["checks"].append({"name": "fato_receita_totais", "values": json_compat(dict(r))})
+
+    out_json = outdir / str(ano) / "data_coverage_report.json"
+    ensure_dir(out_json.parent)
+    out_json.write_text(json.dumps(json_compat(cov), ensure_ascii=False, indent=2))
+    log(f"📄 data_coverage_report → {out_json}", verbose)
 
 # --------------------------
 # Pipeline por ano
@@ -488,11 +535,11 @@ def export_all_for_year(engine: Engine, schema: str, outdir: Path, ano: int, ver
     export_receita_prevista_arrecadada_anual(engine, schema, outdir, ano, verbose)
     export_superavit_deficit_anual(engine, schema, outdir, ano, verbose)
 
-    # novos (somente quando existir dimensão correspondente)
+    # adicionais (só se existirem colunas/valores)
     export_execucao_por_funcao_anual(engine, schema, outdir, ano, verbose)
     export_execucao_por_orgao_unidade_anual(engine, schema, outdir, ano, verbose)
 
-    # nova KPI compatível com o dado atual
+    # nova KPI: receita por código com nome (especificacao)
     export_receita_por_codigo_anual(engine, schema, outdir, ano, verbose)
 
     # validações e cobertura

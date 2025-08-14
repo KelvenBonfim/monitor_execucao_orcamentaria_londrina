@@ -1,39 +1,39 @@
 {
   "rows": 17,
   "cols": [
-    "ano",
     "codigo",
+    "especificacao",
     "previsao",
     "arrecadacao"
   ],
   "sample": [
     {
-      "ano": 2024,
       "codigo": "17",
+      "especificacao": "TRANSFERÊNCIAS CORRENTES",
       "previsao": 1576847000.0,
       "arrecadacao": 1770198967.19
     },
     {
-      "ano": 2024,
       "codigo": "11",
+      "especificacao": "IMPOSTOS, TAXAS E CONTRIBUIÇÕES DE MELHORIA",
       "previsao": 1419782000.0,
       "arrecadacao": 1528341927.6
     },
     {
-      "ano": 2024,
       "codigo": "72",
+      "especificacao": "CONTRIBUIÇÕES - INTRAORÇAMENTÁRIA",
       "previsao": 387814000.0,
       "arrecadacao": 396010549.88
     },
     {
-      "ano": 2024,
       "codigo": "12",
+      "especificacao": "CONTRIBUIÇÕES",
       "previsao": 181361000.0,
       "arrecadacao": 214787874.51
     },
     {
-      "ano": 2024,
       "codigo": "79",
+      "especificacao": "OUTRAS RECEITAS CORRENTES",
       "previsao": 100556000.0,
       "arrecadacao": 110999115.55
     }

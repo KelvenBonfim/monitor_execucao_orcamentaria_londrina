@@ -1,16 +1,20 @@
 {
   "ano": 2021,
-  "despesa": {
-    "linhas": 12,
-    "entidades": 12,
-    "empenhado": 2772775122.79,
-    "liquidado": 2543602728.98,
-    "pago": 2531825076.07
-  },
-  "receita": {
-    "linhas": 28,
-    "codigos": 17,
-    "previsto": 2739532000.0,
-    "arrecadado": 2915259476.3
-  }
+  "checks": [
+    {
+      "name": "fato_despesa_totais",
+      "values": {
+        "empenhado": 2772775122.79,
+        "liquidado": 2543602728.98,
+        "pago": 2531825076.07
+      }
+    },
+    {
+      "name": "fato_receita_totais",
+      "values": {
+        "previsto": 2739532000.0,
+        "arrecadado": 2915259476.3
+      }
+    }
+  ]
 }

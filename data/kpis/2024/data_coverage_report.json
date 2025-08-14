@@ -1,16 +1,20 @@
 {
   "ano": 2024,
-  "despesa": {
-    "linhas": 12,
-    "entidades": 12,
-    "empenhado": 4056869096.14,
-    "liquidado": 3969002492.83,
-    "pago": 3893490171.61
-  },
-  "receita": {
-    "linhas": 31,
-    "codigos": 17,
-    "previsto": 3949006000.0,
-    "arrecadado": 4390812127.11
-  }
+  "checks": [
+    {
+      "name": "fato_despesa_totais",
+      "values": {
+        "empenhado": 4056869096.14,
+        "liquidado": 3969002492.83,
+        "pago": 3893490171.61
+      }
+    },
+    {
+      "name": "fato_receita_totais",
+      "values": {
+        "previsto": 3949006000.0,
+        "arrecadado": 4390812127.11
+      }
+    }
+  ]
 }

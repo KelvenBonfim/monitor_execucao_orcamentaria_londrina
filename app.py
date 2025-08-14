@@ -114,18 +114,44 @@ if USE_DB:
         return pd.read_sql(text(sql), get_engine(), params={"ano": int(ano)})
 
     @st.cache_data(show_spinner=False)
-    def db_receita_por_codigo(ano: int):
-        """Receita agrupada por código (tipo) para o ano."""
-        sql = """
-          SELECT codigo,
-                 SUM(COALESCE(previsao, 0))    AS previsao,
-                 SUM(COALESCE(arrecadacao, 0)) AS arrecadacao
+    def db_receita_por_codigo(ano: int) -> pd.DataFrame:
+        """
+        Por código (tipo de receita). Usa a especificação não nula mais longa por código.
+        Funciona com esquemas (previsao/arrecadacao) OU (valor_previsto/valor_arrecadado).
+        """
+        eng = get_engine()
+
+        # Detecta colunas de valores
+        try:
+            # tenta previsao/arrecadacao direto; se não existir, cai no except
+            pd.read_sql(text("SELECT previsao, arrecadacao FROM public.fato_receita LIMIT 1"), eng)
+            prev_col = "previsao"
+            arr_col = "arrecadacao"
+        except Exception:
+            prev_col = "valor_previsto"
+            arr_col  = "valor_arrecadado"
+
+        sql = f"""
+          SELECT
+            TRIM(COALESCE(codigo::text, '')) AS codigo,
+            COALESCE(
+              (array_agg(NULLIF(btrim(especificacao), '') ORDER BY length(btrim(especificacao)) DESC))[1],
+              ''
+            ) AS especificacao,
+            SUM(COALESCE({prev_col}, 0)) AS previsto,
+            SUM(COALESCE({arr_col},  0)) AS arrecadado
           FROM public.fato_receita
           WHERE exercicio = :ano
-          GROUP BY codigo
-          ORDER BY arrecadacao DESC;
+          GROUP BY 1
+          HAVING TRIM(COALESCE(codigo::text, '')) <> ''
+          ORDER BY arrecadado DESC;
         """
-        return pd.read_sql(text(sql), get_engine(), params={"ano": int(ano)})
+        df = pd.read_sql(text(sql), eng, params={"ano": int(ano)})
+        # limpeza final
+        for c in ["codigo", "especificacao"]:
+            if c in df.columns:
+                df[c] = df[c].astype(str).str.strip()
+        return df
 
 # =========================
 # Carregamento via CSV (fallback)
@@ -294,39 +320,55 @@ else:
     st.info("Não há dados de despesa por entidade para o ano.")
 
 # =========================
-# Receita por Código (ano selecionado)
+# Receita por Código (ano)
 # =========================
 st.subheader("Receita por Código (ano selecionado)")
 if USE_DB:
-    rc = db_receita_por_codigo(year)
+    rec_cod = db_receita_por_codigo(year)
 else:
-    rc = fs_load_csv(year, "receita_por_codigo_anual")
+    rec_cod = fs_load_csv(year, "receita_por_codigo_anual")
+    if not rec_cod.empty:
+        # limpeza: tira espaços/linhas nulas e garante especificação não nula por código
+        for c in rec_cod.columns:
+            if rec_cod[c].dtype == object:
+                rec_cod[c] = rec_cod[c].astype(str).str.strip()
+        rec_cod = rec_cod[rec_cod["codigo"].astype(str).str.strip() != ""].copy()
+        # preenche especificação com a não nula mais longa por código
+        # (caso a export tenha vindo sem especificacao em algumas linhas)
+        rec_cod["especificacao"] = rec_cod["especificacao"].fillna("").astype(str).str.strip()
+        spec_fill = (
+            rec_cod.loc[rec_cod["especificacao"] != ""]
+                  .assign(len_spec=lambda d: d["especificacao"].str.len())
+                  .sort_values(["codigo", "len_spec"], ascending=[True, False])
+                  .drop_duplicates("codigo")[["codigo", "especificacao"]]
+        )
+        rec_cod = rec_cod.drop(columns=["especificacao"], errors="ignore") \
+                         .merge(spec_fill, on="codigo", how="left")
+# plot
+if not rec_cod.empty:
+    plot = rec_cod.copy()
+    if "arrecadado" in plot.columns:
+        plot["arrecadado"] = plot["arrecadado"].astype(float).apply(lambda v: scale_number(v, escala))
+        ycol = "arrecadado"
+    else:
+        # fallback raro: usa previsto
+        plot["previsto"] = plot["previsto"].astype(float).apply(lambda v: scale_number(v, escala))
+        ycol = "previsto"
 
-if not rc.empty:
-    # normaliza nomes (aceita maiúsculas/minúsculas)
-    cols_lower = {c.lower(): c for c in rc.columns}
-    codigo_col = cols_lower.get("codigo", "codigo")
-    prev_col   = cols_lower.get("previsao", "previsao") if "previsao" in cols_lower else None
-    arr_col    = cols_lower.get("arrecadacao", "arrecadacao")
-
-    rc_plot = rc[[codigo_col, arr_col] + ([prev_col] if prev_col and prev_col in rc.columns else [])].copy()
-    # escala
-    rc_plot[arr_col] = rc_plot[arr_col].astype(float).apply(lambda v: scale_number(v, escala))
-    if prev_col and prev_col in rc_plot.columns:
-        rc_plot[prev_col] = rc_plot[prev_col].astype(float).apply(lambda v: scale_number(v, escala))
-
-    rc_plot = rc_plot.sort_values(arr_col, ascending=False).head(top_n)
+    # top N
+    plot = plot.sort_values(ycol, ascending=False).head(top_n)
     fig = px.bar(
-        rc_plot,
-        x=codigo_col,
-        y=arr_col,
+        plot,
+        x="codigo",
+        y=ycol,
         text_auto=".2s",
-        labels={arr_col: label_valor(escala), codigo_col: "Código"}
+        labels={ycol: label_valor(escala), "codigo": "Código"},
+        hover_data={"especificacao": True, "codigo": True, ycol: True}
     )
     fig.update_xaxes(tickangle=45)
     st.plotly_chart(fig, use_container_width=True)
 else:
-    st.caption("ℹ️ KPI `receita_por_codigo_anual.csv` não encontrado em `data/kpis/<ano>/` (ou DB sem dados).")
+    st.info("Sem dados de receita por código para o ano.")
 
 # =========================
 # Seções adicionais (CSV-only)
@@ -367,7 +409,7 @@ if not ou.empty and {"orgao", "unidade", "pago"}.issubset(ou.columns):
     fig.update_xaxes(tickangle=45)
     st.plotly_chart(fig, use_container_width=True)
 else:
-    st.caption("ℹ️ KPI `execucao_por_orgao_unidade_anual.csv` não encontrado em `data/kpis/<ano>/`.")
+    st.caption("ℹ️ KPI `execucao_por_orgao_unidade_anual.csv` não encontrado em `data/kpis/<ao>/`.")
 
 st.markdown("---")
 st.caption("No modo CSV, gere KPIs com `scripts/09_export_kpis.py` e faça commit em `data/kpis/`. No modo DB, os dados vêm direto do Neon.")

@@ -1,16 +1,20 @@
 {
   "ano": 2022,
-  "despesa": {
-    "linhas": 12,
-    "entidades": 12,
-    "empenhado": 3070816108.52,
-    "liquidado": 2900478567.09,
-    "pago": 2859632841.14
-  },
-  "receita": {
-    "linhas": 26,
-    "codigos": 17,
-    "previsto": 2983482000.0,
-    "arrecadado": 3390230129.74
-  }
+  "checks": [
+    {
+      "name": "fato_despesa_totais",
+      "values": {
+        "empenhado": 3070816108.52,
+        "liquidado": 2900478567.09,
+        "pago": 2859632841.14
+      }
+    },
+    {
+      "name": "fato_receita_totais",
+      "values": {
+        "previsto": 2983482000.0,
+        "arrecadado": 3390230129.74
+      }
+    }
+  ]
 }

@@ -1,16 +1,20 @@
 {
   "ano": 2023,
-  "despesa": {
-    "linhas": 12,
-    "entidades": 12,
-    "empenhado": 3620876605.31,
-    "liquidado": 3462923251.76,
-    "pago": 3429915902.64
-  },
-  "receita": {
-    "linhas": 32,
-    "codigos": 17,
-    "previsto": 3629134000.0,
-    "arrecadado": 3833933844.17
-  }
+  "checks": [
+    {
+      "name": "fato_despesa_totais",
+      "values": {
+        "empenhado": 3620876605.31,
+        "liquidado": 3462923251.76,
+        "pago": 3429915902.64
+      }
+    },
+    {
+      "name": "fato_receita_totais",
+      "values": {
+        "previsto": 3629134000.0,
+        "arrecadado": 3833933844.17
+      }
+    }
+  ]
 }

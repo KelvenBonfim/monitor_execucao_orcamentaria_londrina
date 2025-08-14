@@ -1,39 +1,39 @@
 {
   "rows": 17,
   "cols": [
-    "ano",
     "codigo",
+    "especificacao",
     "previsao",
     "arrecadacao"
   ],
   "sample": [
     {
-      "ano": 2021,
       "codigo": "17",
+      "especificacao": "TRANSFERÊNCIAS CORRENTES",
       "previsao": 1116228000.0,
       "arrecadacao": 1238664857.2
     },
     {
-      "ano": 2021,
       "codigo": "11",
+      "especificacao": "IMPOSTOS, TAXAS E CONTRIBUIÇÕES DE MELHORIA",
       "previsao": 923166000.0,
       "arrecadacao": 1070645758.71
     },
     {
-      "ano": 2021,
       "codigo": "72",
+      "especificacao": "CONTRIBUIÇÕES",
       "previsao": 249582000.0,
       "arrecadacao": 252033914.4
     },
     {
-      "ano": 2021,
       "codigo": "12",
+      "especificacao": "CONTRIBUIÇÕES",
       "previsao": 134272000.0,
       "arrecadacao": 145976288.9
     },
     {
-      "ano": 2021,
       "codigo": "16",
+      "especificacao": "RECEITA DE SERVIÇOS",
       "previsao": 65987000.0,
       "arrecadacao": 70070219.55
     }

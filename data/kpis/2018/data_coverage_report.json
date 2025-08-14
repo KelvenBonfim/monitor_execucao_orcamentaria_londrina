@@ -1,16 +1,20 @@
 {
   "ano": 2018,
-  "despesa": {
-    "linhas": 12,
-    "entidades": 12,
-    "empenhado": 2122822735.08,
-    "liquidado": 2000080972.11,
-    "pago": 1973966603.25
-  },
-  "receita": {
-    "linhas": 28,
-    "codigos": 17,
-    "previsto": 2230698000.0,
-    "arrecadado": 1931007935.39
-  }
+  "checks": [
+    {
+      "name": "fato_despesa_totais",
+      "values": {
+        "empenhado": 2122822735.08,
+        "liquidado": 2000080972.11,
+        "pago": 1973966603.25
+      }
+    },
+    {
+      "name": "fato_receita_totais",
+      "values": {
+        "previsto": 2230698000.0,
+        "arrecadado": 1931007935.39
+      }
+    }
+  ]
 }

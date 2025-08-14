@@ -1,39 +1,39 @@
 {
   "rows": 17,
   "cols": [
-    "ano",
     "codigo",
+    "especificacao",
     "previsao",
     "arrecadacao"
   ],
   "sample": [
     {
-      "ano": 2022,
       "codigo": "17",
+      "especificacao": "TRANSFERÊNCIAS CORRENTES",
       "previsao": 1242675000.0,
       "arrecadacao": 1415888455.89
     },
     {
-      "ano": 2022,
       "codigo": "11",
+      "especificacao": "IMPOSTOS, TAXAS E CONTRIBUIÇÕES DE MELHORIA",
       "previsao": 1043884000.0,
       "arrecadacao": 1210437797.02
     },
     {
-      "ano": 2022,
       "codigo": "72",
+      "especificacao": "CONTRIBUIÇÕES",
       "previsao": 300967000.0,
       "arrecadacao": 299245526.24
     },
     {
-      "ano": 2022,
       "codigo": "12",
+      "especificacao": "CONTRIBUIÇÕES",
       "previsao": 149775000.0,
       "arrecadacao": 165783896.8
     },
     {
-      "ano": 2022,
       "codigo": "13",
+      "especificacao": "RECEITA PATRIMONIAL",
       "previsao": 35054000.0,
       "arrecadacao": 87045781.06
     }

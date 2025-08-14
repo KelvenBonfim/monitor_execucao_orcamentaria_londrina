@@ -114,13 +114,14 @@ if USE_DB:
         return pd.read_sql(text(sql), get_engine(), params={"ano": int(ano)})
 
     @st.cache_data(show_spinner=False)
-    def db_receita_por_codigo(ano: int) -> pd.DataFrame:
+    def db_receita_por_tipo(ano: int) -> pd.DataFrame:
         """
-        Por código (tipo de receita). Usa a especificação não nula mais longa por código.
-        Funciona com esquemas (previsao/arrecadacao) OU (valor_previsto/valor_arrecadado).
+        Por tipo de receita (usa a 'especificacao' não nula MAIS LONGA por código).
+        Retorna colunas: codigo, tipo, previsto, arrecadado.
+        Funciona com (previsao/arrecadacao) OU (valor_previsto/valor_arrecadado).
         """
         eng = get_engine()
-        # Detecta colunas de valores
+        # Detecta colunas de valores de forma segura (sem explodir no Cloud)
         try:
             pd.read_sql(text("SELECT previsao, arrecadacao FROM public.fato_receita LIMIT 1"), eng)
             prev_col = "previsao"
@@ -130,23 +131,37 @@ if USE_DB:
             arr_col  = "valor_arrecadado"
 
         sql = f"""
+        WITH base AS (
           SELECT
-            TRIM(COALESCE(codigo::text, '')) AS codigo,
-            COALESCE(
-              (array_agg(NULLIF(btrim(especificacao), '') ORDER BY length(btrim(especificacao)) DESC))[1],
-              ''
-            ) AS especificacao,
-            SUM(COALESCE({prev_col}, 0)) AS previsto,
-            SUM(COALESCE({arr_col},  0)) AS arrecadado
+            TRIM(COALESCE(codigo::text,'')) AS codigo,
+            NULLIF(btrim(especificacao), '') AS espec,
+            COALESCE({prev_col}, 0) AS prev,
+            COALESCE({arr_col},  0) AS arr
           FROM public.fato_receita
           WHERE exercicio = :ano
-          GROUP BY 1
-          HAVING TRIM(COALESCE(codigo::text, '')) <> ''
-          ORDER BY arrecadado DESC;
+        ),
+        best AS (
+          SELECT
+            codigo,
+            (ARRAY_AGG(espec ORDER BY length(espec) DESC NULLS LAST))[1] AS tipo
+          FROM base
+          WHERE codigo <> ''
+          GROUP BY codigo
+        ),
+        agg AS (
+          SELECT b.codigo, be.tipo,
+                 SUM(b.prev) AS previsto,
+                 SUM(b.arr)  AS arrecadado
+          FROM base b
+          JOIN best be USING (codigo)
+          GROUP BY b.codigo, be.tipo
+        )
+        SELECT * FROM agg
+        ORDER BY arrecadado DESC;
         """
         df = pd.read_sql(text(sql), eng, params={"ano": int(ano)})
         # limpeza final
-        for c in ["codigo", "especificacao"]:
+        for c in ["codigo", "tipo"]:
             if c in df.columns:
                 df[c] = df[c].astype(str).str.strip()
         return df
@@ -247,7 +262,6 @@ else:
 
 if not serie_glob.empty:
     serie_glob = serie_glob[serie_glob["ano"].isin(anos_serie)].copy()
-    # aplicar escala
     for col in ["empenhado", "liquidado", "pago"]:
         if col in serie_glob.columns:
             serie_glob[col] = serie_glob[col].astype(float).apply(lambda v: scale_number(v, escala))
@@ -294,15 +308,12 @@ else:
     ent = fs_load_csv(year, "execucao_por_entidade_anual")
 
 if not ent.empty:
-    # normalização
     if "entidade" not in ent.columns:
         cand = [c for c in ent.columns if "entid" in c.lower()]
         if cand:
             ent = ent.rename(columns={cand[0]: "entidade"})
-    # filtro de busca
     if busca_ent:
         ent = ent[ent["entidade"].str.contains(busca_ent, case=False, na=False)]
-    # metrica
     if metrica_ent not in ent.columns:
         st.warning(f"A métrica '{metrica_ent}' não está disponível nos dados.")
     else:
@@ -317,32 +328,42 @@ else:
     st.info("Não há dados de despesa por entidade para o ano.")
 
 # =========================
-# Receita por Código (ano)
+# Receita por TIPO (ano) — barras com código como rótulo
 # =========================
-st.subheader("Receita por Código (ano selecionado)")
+st.subheader("Receita por Tipo (ano selecionado)")
 if USE_DB:
-    rec_cod = db_receita_por_codigo(year)
+    rec_tipo = db_receita_por_tipo(year)
 else:
     rec_cod = fs_load_csv(year, "receita_por_codigo_anual")
+    # monta 'tipo' como a especificação não nula mais longa por código
     if not rec_cod.empty:
-        # limpeza: tira espaços/linhas nulas e garante especificação não nula por código
         for c in rec_cod.columns:
             if rec_cod[c].dtype == object:
                 rec_cod[c] = rec_cod[c].astype(str).str.strip()
         rec_cod = rec_cod[rec_cod["codigo"].astype(str).str.strip() != ""].copy()
-        rec_cod["especificacao"] = rec_cod["especificacao"].fillna("").astype(str).str.strip()
-        spec_fill = (
-            rec_cod.loc[rec_cod["especificacao"] != ""]
-                  .assign(len_spec=lambda d: d["especificacao"].str.len())
-                  .sort_values(["codigo", "len_spec"], ascending=[True, False])
-                  .drop_duplicates("codigo")[["codigo", "especificacao"]]
-        )
-        rec_cod = rec_cod.drop(columns=["especificacao"], errors="ignore") \
-                         .merge(spec_fill, on="codigo", how="left")
+        if "tipo" not in rec_cod.columns:
+            # se veio com 'especificacao', promover para 'tipo'
+            if "especificacao" in rec_cod.columns:
+                # pega por código a especificação mais longa
+                spec_fill = (
+                    rec_cod.loc[rec_cod["especificacao"] != ""]
+                           .assign(len_spec=lambda d: d["especificacao"].str.len())
+                           .sort_values(["codigo", "len_spec"], ascending=[True, False])
+                           .drop_duplicates("codigo")[["codigo", "especificacao"]]
+                           .rename(columns={"especificacao":"tipo"})
+                )
+                rec_cod = rec_cod.drop(columns=["tipo"], errors="ignore") \
+                                 .merge(spec_fill, on="codigo", how="left")
+            else:
+                rec_cod["tipo"] = rec_cod["codigo"]
+        rec_tipo = rec_cod.rename(columns={"arrecadado":"arrecadado", "previsto":"previsto"})
+    else:
+        rec_tipo = pd.DataFrame(columns=["codigo","tipo","previsto","arrecadado"])
 
 # plot
-if not rec_cod.empty:
-    plot = rec_cod.copy()
+if not rec_tipo.empty:
+    plot = rec_tipo.copy()
+    # escolher eixo Y (prioriza arrecadado)
     if "arrecadado" in plot.columns:
         plot["arrecadado"] = plot["arrecadado"].astype(float).apply(lambda v: scale_number(v, escala))
         ycol = "arrecadado"
@@ -350,19 +371,22 @@ if not rec_cod.empty:
         plot["previsto"] = plot["previsto"].astype(float).apply(lambda v: scale_number(v, escala))
         ycol = "previsto"
 
+    # Top N e ordenação
     plot = plot.sort_values(ycol, ascending=False).head(top_n)
+
+    # barras com X=tipo e texto do código
     fig = px.bar(
         plot,
-        x="codigo",
+        x="tipo",
         y=ycol,
-        text_auto=".2s",
-        labels={ycol: label_valor(escala), "codigo": "Código"},
-        hover_data={"especificacao": True, "codigo": True, ycol: True}
+        text="codigo",  # mostra o código na barra
+        hover_data={"codigo": True, "tipo": True, ycol: True},
+        labels={ycol: label_valor(escala), "tipo": "Tipo de Receita"}
     )
     fig.update_xaxes(tickangle=45)
     st.plotly_chart(fig, use_container_width=True)
 else:
-    st.info("Sem dados de receita por código para o ano.")
+    st.info("Sem dados de receita por tipo para o ano.")
 
 st.markdown("---")
 st.caption("No modo CSV, gere KPIs com `scripts/09_export_kpis.py` e faça commit em `data/kpis/`. No modo DB, os dados vêm direto do Neon.")

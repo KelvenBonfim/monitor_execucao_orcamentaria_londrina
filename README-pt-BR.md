@@ -1,3 +1,6 @@
+## 🌐 [Acesse o Dashboard](https://monitorexecucaoorcamentarialondrina.streamlit.app/)
+
+
 # Monitor de Execução Orçamentária de Londrina
 
 Este projeto é um **Sistema de Monitoramento da Execução Orçamentária** para Londrina, permitindo a análise da execução de despesas e receitas municipais ao longo de vários anos.  

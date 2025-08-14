@@ -1,3 +1,5 @@
+## 🌐 [Access the Dashboard](https://monitorexecucaoorcamentarialondrina.streamlit.app/)
+
 # Londrina Budget Execution Monitor
 
 This project is a **Budget Execution Monitoring System** for Londrina, allowing analysis of municipal spending and revenue execution over multiple years.  

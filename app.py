@@ -120,13 +120,11 @@ if USE_DB:
         Funciona com esquemas (previsao/arrecadacao) OU (valor_previsto/valor_arrecadado).
         """
         eng = get_engine()
-
         # Detecta colunas de valores
         try:
-            # tenta previsao/arrecadacao direto; se não existir, cai no except
             pd.read_sql(text("SELECT previsao, arrecadacao FROM public.fato_receita LIMIT 1"), eng)
             prev_col = "previsao"
-            arr_col = "arrecadacao"
+            arr_col  = "arrecadacao"
         except Exception:
             prev_col = "valor_previsto"
             arr_col  = "valor_arrecadado"
@@ -196,7 +194,7 @@ st.sidebar.header("⚙️ Filtros")
 year = st.sidebar.selectbox("Ano", years, index=len(years) - 1)
 anos_serie = st.sidebar.multiselect("Anos na série (evolução)", years, default=years)
 escala = st.sidebar.radio("Escala dos valores", ["unidade", "mil", "milhões", "bilhões"], horizontal=True, index=2)
-top_n = st.sidebar.slider("Top N (Entidades/Funções/Órgãos-Unidades)", 5, 30, 15)
+top_n = st.sidebar.slider("Top N (Entidades/Códigos)", 5, 30, 15)
 metrica_ent = st.sidebar.radio("Métrica para 'por Entidade'", ["pago", "liquidado", "empenhado"], index=0, horizontal=True)
 busca_ent = st.sidebar.text_input("Filtro de entidade (contém)", value="").strip()
 
@@ -298,7 +296,6 @@ else:
 if not ent.empty:
     # normalização
     if "entidade" not in ent.columns:
-        # tenta inferir nome similar
         cand = [c for c in ent.columns if "entid" in c.lower()]
         if cand:
             ent = ent.rename(columns={cand[0]: "entidade"})
@@ -333,8 +330,6 @@ else:
             if rec_cod[c].dtype == object:
                 rec_cod[c] = rec_cod[c].astype(str).str.strip()
         rec_cod = rec_cod[rec_cod["codigo"].astype(str).str.strip() != ""].copy()
-        # preenche especificação com a não nula mais longa por código
-        # (caso a export tenha vindo sem especificacao em algumas linhas)
         rec_cod["especificacao"] = rec_cod["especificacao"].fillna("").astype(str).str.strip()
         spec_fill = (
             rec_cod.loc[rec_cod["especificacao"] != ""]
@@ -344,6 +339,7 @@ else:
         )
         rec_cod = rec_cod.drop(columns=["especificacao"], errors="ignore") \
                          .merge(spec_fill, on="codigo", how="left")
+
 # plot
 if not rec_cod.empty:
     plot = rec_cod.copy()
@@ -351,11 +347,9 @@ if not rec_cod.empty:
         plot["arrecadado"] = plot["arrecadado"].astype(float).apply(lambda v: scale_number(v, escala))
         ycol = "arrecadado"
     else:
-        # fallback raro: usa previsto
         plot["previsto"] = plot["previsto"].astype(float).apply(lambda v: scale_number(v, escala))
         ycol = "previsto"
 
-    # top N
     plot = plot.sort_values(ycol, ascending=False).head(top_n)
     fig = px.bar(
         plot,
@@ -369,47 +363,6 @@ if not rec_cod.empty:
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.info("Sem dados de receita por código para o ano.")
-
-# =========================
-# Seções adicionais (CSV-only)
-# =========================
-st.markdown("---")
-st.subheader("Seções adicionais (disponível apenas quando houver KPIs CSV)")
-
-# Por Função
-fun = fs_load_csv(year, "execucao_por_funcao_anual")
-if not fun.empty and "pago" in fun.columns:
-    fun_plot = fun.copy()
-    fun_plot["pago"] = fun_plot["pago"].astype(float).apply(lambda v: scale_number(v, escala))
-    top_fun = fun_plot.sort_values("pago", ascending=False).head(top_n)
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        fig = px.bar(top_fun, x="funcao", y="pago", text_auto=".2s",
-                     labels={"pago": label_valor(escala)})
-        fig.update_xaxes(tickangle=45)
-        st.plotly_chart(fig, use_container_width=True)
-    with col2:
-        if "pago_share" in fun.columns:
-            pie = top_fun.copy()
-            pie["share_%"] = pie["pago_share"] * 100
-            fig2 = px.pie(pie, names="funcao", values="share_%", title="Participação no total (Top)")
-            st.plotly_chart(fig2, use_container_width=True)
-else:
-    st.caption("ℹ️ KPI `execucao_por_funcao_anual.csv` não encontrado em `data/kpis/<ano>/`.")
-
-# Por Órgão/Unidade
-ou = fs_load_csv(year, "execucao_por_orgao_unidade_anual")
-if not ou.empty and {"orgao", "unidade", "pago"}.issubset(ou.columns):
-    ou_plot = ou.copy()
-    ou_plot["pago"] = ou_plot["pago"].astype(float).apply(lambda v: scale_number(v, escala))
-    top_ou = ou_plot.sort_values("pago", ascending=False).head(top_n).copy()
-    top_ou["orgao_unidade"] = top_ou["orgao"].astype(str) + " — " + top_ou["unidade"].astype(str)
-    fig = px.bar(top_ou, x="orgao_unidade", y="pago", text_auto=".2s",
-                 labels={"pago": label_valor(escala)})
-    fig.update_xaxes(tickangle=45)
-    st.plotly_chart(fig, use_container_width=True)
-else:
-    st.caption("ℹ️ KPI `execucao_por_orgao_unidade_anual.csv` não encontrado em `data/kpis/<ao>/`.")
 
 st.markdown("---")
 st.caption("No modo CSV, gere KPIs com `scripts/09_export_kpis.py` e faça commit em `data/kpis/`. No modo DB, os dados vêm direto do Neon.")

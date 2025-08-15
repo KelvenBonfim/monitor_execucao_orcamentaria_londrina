@@ -25,7 +25,12 @@ python scripts/02_fetch_receita_prev_arrec.py --anos 2018-2025 --out raw/receita
 ### 03 — Parse Anexo 10 PDF → CSV
 Extracts tables from the Anexo 10 PDF and normalizes BR numbers to floats.
 ```bash
-python scripts/03_anexo10_pdf_to_csv.py --in raw/receitas/ --out raw/receitas_csv/
+# melhor resultado: instalar Camelot e Ghostscript
+sudo apt install ghostscript
+pip install camelot-py[cv] opencv-python
+
+# processar todos os PDFs de receitas_raw/ e salvar um CSV por ano em receitas/
+python scripts/03_anexo10_pdf_to_csv.py --in raw/receitas_raw --outdir raw/receitas
 ```
 
 ### 04 — Load CSVs to Postgres (staging)
@@ -37,7 +42,7 @@ python scripts/04_load_csv_to_postgres.py --schema public --staging public --csv
 ### 05 — Build fact tables / models
 Creates/refreshes `public.fato_despesa` and `public.fato_receita` + derived summaries.
 ```bash
-python scripts/05_build_models.py --schema public --staging public --years 2018-2025 --recreate --verbose
+python scripts/05_build_models.py --csvdir raw/receitas --schema public --staging public --years 2018-2025 --recreate --verbose
 ```
 
 ### 06 — Quality checks

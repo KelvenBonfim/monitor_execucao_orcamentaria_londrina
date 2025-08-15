@@ -17,3 +17,5 @@ plotly
 
 # Testing
 pytest
+camelot-py[cv] 
+opencv-python
